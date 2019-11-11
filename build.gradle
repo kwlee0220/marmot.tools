@@ -1,0 +1,168 @@
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+ 
+group = 'etri'
+version = '5.12.02'
+
+sourceCompatibility = JavaVersion.VERSION_1_8;
+[compileJava,compileTestJava]*.options*.encoding = 'UTF-8'
+
+
+buildscript {
+	repositories {
+		mavenLocal()
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+		classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
+	}
+}
+
+repositories {
+    mavenLocal()
+	maven {
+		url "http://www.datanucleus.org/downloads/maven2/"
+	}
+	maven {
+		url "http://download.osgeo.org/webdav/geotools/"
+	}
+    mavenCentral()
+	maven {
+		url "http://repo.boundlessgeo.com/main/"
+	}
+}
+
+ext.geotools_version = '17.2'
+
+dependencies {
+	compile project(':utils')
+	compile project(':marmot.common')
+	compile project(':marmot.client')
+
+	compile	"org.geotools:gt-swt:${geotools_version}"
+	
+	testCompile "junit:junit:4.12"
+}
+
+shadowJar {
+	classifier 'all'
+	
+	mergeServiceFiles()
+	
+	exclude 'META-INF/*.SF'
+	exclude 'META-INF/*.DSA'
+	exclude 'META-INF/*.RSA'
+	
+	relocate 'com.fasterxml', 'shadow.com.fasterxml'
+}
+
+
+// 다른 라이브러리들과 conflict가 발생하는 경우 이 shadow jar를 사용한다.
+// 이것을 사용하면 xxx-all.jar 대신 xxx-shadowed.jar 가 생성된다.
+//shadowJar {
+//	classifier 'shadowed'
+//	
+//	mergeServiceFiles()
+//	
+//	exclude 'META-INF/*.SF'
+//	exclude 'META-INF/*.DSA'
+//	exclude 'META-INF/*.RSA'
+//	
+//	relocate 'com.google.common', 'shadow.com.google.common'
+//	relocate 'io.netty', 'shadow.io.netty'
+//}
+
+
+task sourceJar(type: Jar) {
+	classifier 'sources'
+	from sourceSets.main.allSource
+}
+
+javadoc {
+	source sourceSets.main.allJava
+	
+	title = 'Marmot API Document'
+	
+	options.charSet = 'UTF-8'
+	options.encoding = 'UTF-8'
+	options.links = ['https://docs.oracle.com/javase/8/docs/api/']
+}
+task javadocJar(type: Jar) {
+	classifier 'javadoc'
+	from javadoc.destinationDir
+}
+
+artifacts {
+	archives sourceJar
+	archives javadocJar
+	archives shadowJar
+}
+
+apply plugin: 'maven-publish'
+publishing {
+	publications {
+		main(MavenPublication) {
+			artifact jar
+			artifact sourceJar
+			artifact javadocJar
+			artifact shadowJar
+		}
+	}
+}
+
+ext.distDir = "${System.env.HOME}/etc/marmot/marmot.client.dist"
+task distributeBinary(type:Copy) {
+	dependsOn assemble
+	into "${distDir}"
+	from ("${projectDir}") {
+		include 'bin/**'
+		include 'log4j.properties'
+		include '.gitignore'
+	}
+	from "${buildDir}/libs/${archivesBaseName}-${version}-javadoc.jar"
+}
+
+apply plugin: 'maven-publish'
+publishing {
+	publications {
+		main(MavenPublication) {
+			artifact jar
+			artifact sourceJar
+			artifact javadocJar
+		}
+	}
+}
+
+apply plugin: 'eclipse'
+eclipse {
+	classpath {
+		file {
+			withXml {
+				def node = it.asNode()
+				node.appendNode('classpathentry', [kind: 'output', path: 'classes'])
+			}
+			
+			whenMerged { cp ->
+				Map entryByPath = cp.entries.groupBy { entry -> entry.path }
+				entryByPath.each { key, values ->
+					if ( values.size() > 1 ) {
+            			def entry = values.first()
+            			if ( entry.kind == 'src' ) {
+            				entry.includes = []
+            				entry.excludes = []
+            			}
+            			int index = cp.entries.indexOf entry
+            			cp.entries.removeAll values
+            			cp.entries.add index, entry
+					}
+				}
+				cp.entries.each { entry ->
+					if ( entry.kind == 'src' && entry.hasProperty('output') ) {
+						entry.output = 'classes'
+					}
+				}
+			}
+		}
+	}
+}
