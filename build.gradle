@@ -94,7 +94,7 @@ publishing {
 	}
 }
 
-ext.distDir = "${System.env.HOME}/etc/marmot/marmot.client.dist"
+ext.distDir = "${System.env.HOME}/etc/marmot/marmot.tools.dist"
 task distributeBinary(type:Copy) {
 	dependsOn assemble
 	into "${distDir}"
