@@ -19,6 +19,8 @@ import marmot.command.MarmotClientCommand;
 import marmot.command.MarmotClientCommands;
 import marmot.geo.geotools.SimpleFeatures;
 import marmot.geo.query.GeoDataStore;
+import marmot.remote.protobuf.PBMarmotClient;
+import marmot.remote.protobuf.PBMarmotSparkSessionClient;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help;
@@ -51,6 +53,12 @@ public class RemoteViewDataSetMain extends MarmotClientCommand {
 
 		RemoteViewDataSetMain cmd = new RemoteViewDataSetMain();
 		CommandLine.run(cmd, System.out, System.err, Help.Ansi.OFF, args);
+	}
+	
+	@Override
+	protected PBMarmotClient connect() throws IOException {
+		return PBMarmotSparkSessionClient.connect(m_connector.getMarmotHost(),
+													m_connector.getMarmotPort());
 	}
 	
 	@Override
