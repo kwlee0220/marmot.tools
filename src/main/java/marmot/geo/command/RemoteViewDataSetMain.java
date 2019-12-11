@@ -12,9 +12,7 @@ import org.geotools.swt.SwtMapFrame;
 import com.google.common.io.Files;
 
 import marmot.DataSet;
-import marmot.GeometryColumnInfo;
 import marmot.MarmotRuntime;
-import marmot.Plan;
 import marmot.command.MarmotClientCommand;
 import marmot.command.MarmotClientCommands;
 import marmot.geo.geotools.SimpleFeatures;
@@ -86,44 +84,7 @@ public class RemoteViewDataSetMain extends MarmotClientCommand {
 	    SwtMapFrame.showMap(context);
 	}
 	
-	private SimpleFeatureCollection sample(DataSet ds, String tarSrid, long count) {
-		double ratio = (double)count / ds.getRecordCount();
-		GeometryColumnInfo gcInfo = ds.getGeometryColumnInfo();
-
-		Plan plan = Plan.builder()
-						.load(ds.getId())
-						.sample(ratio)
-						.transformCrs(gcInfo.name(), gcInfo.srid(), tarSrid)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		return SimpleFeatures.toFeatureCollection(ds.getId(), marmot, plan,
-												ds.getGeometryColumnInfo().srid());
-	}
-
-	private SimpleFeatureCollection read(DataSet ds, String tarSrid) {
-		GeometryColumnInfo gcInfo = ds.getGeometryColumnInfo();
-
-		Plan plan = Plan.builder()
-						.load(ds.getId())
-						.transformCrs(gcInfo.name(), gcInfo.srid(), tarSrid)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		return SimpleFeatures.toFeatureCollection(ds.getId(), marmot, plan,
-												ds.getGeometryColumnInfo().srid());
-	}
-	
 	private SimpleFeatureCollection read(DataSet ds) {
 		return SimpleFeatures.toFeatureCollection(ds);
-	}
-	
-	private SimpleFeatureCollection sample(DataSet ds, long count) {
-		double ratio = (double)count / ds.getRecordCount();
-		Plan plan = Plan.builder()
-						.load(ds.getId())
-						.sample(ratio)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		return SimpleFeatures.toFeatureCollection(ds.getId(), marmot, plan,
-												ds.getGeometryColumnInfo().srid());
 	}
 }

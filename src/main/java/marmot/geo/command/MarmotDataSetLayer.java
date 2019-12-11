@@ -1,7 +1,5 @@
 package marmot.geo.command;
 
-import java.util.List;
-
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -17,14 +15,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Envelope;
 
 import marmot.DataSet;
-import marmot.GeometryColumnInfo;
-import marmot.MarmotRuntime;
-import marmot.Plan;
-import marmot.Record;
 import marmot.RecordSet;
 import marmot.geo.geotools.SimpleFeatures;
 import marmot.geo.query.GeoDataStore;
-import utils.stream.FStream;
 
 /**
  * 
@@ -84,66 +77,7 @@ public class MarmotDataSetLayer extends StyleLayer {
 		 return DataUtilities.source(SimpleFeatures.toFeatureCollection(m_sfType, rset.toList()));
 	}
 	
-	private SimpleFeatureCollection sample(DataSet ds, String tarSrid, long count) {
-		double ratio = (double)count / ds.getRecordCount();
-		GeometryColumnInfo gcInfo = ds.getGeometryColumnInfo();
-
-		Plan plan = Plan.builder()
-						.load(ds.getId())
-						.sample(ratio)
-						.transformCrs(gcInfo.name(), gcInfo.srid(), tarSrid)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		return SimpleFeatures.toFeatureCollection(ds.getId(), marmot, plan,
-												ds.getGeometryColumnInfo().srid());
-	}
-
-	private SimpleFeatureCollection read(DataSet ds, String tarSrid) {
-		GeometryColumnInfo gcInfo = ds.getGeometryColumnInfo();
-
-		Plan plan = Plan.builder()
-						.load(ds.getId())
-						.transformCrs(gcInfo.name(), gcInfo.srid(), tarSrid)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		return SimpleFeatures.toFeatureCollection(ds.getId(), marmot, plan,
-												ds.getGeometryColumnInfo().srid());
-	}
-	
 	private SimpleFeatureCollection read(DataSet ds) {
 		return SimpleFeatures.toFeatureCollection(ds);
-	}
-	
-	private SimpleFeatureCollection sample(DataSet ds, long count) {
-		double ratio = (double)count / ds.getRecordCount();
-		Plan plan = Plan.builder()
-						.load(ds.getId())
-						.sample(ratio)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		return SimpleFeatures.toFeatureCollection(ds.getId(), marmot, plan,
-												ds.getGeometryColumnInfo().srid());
-	}
-	
-	private RecordSet sample2(DataSet ds, long count) {
-		double ratio = (double)count / ds.getRecordCount();
-		Plan plan = Plan.builder()
-						.load(ds.getId())
-						.sample(ratio)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		return marmot.executeToRecordSet(plan);
-	}
-	
-	private List<Record> sample2(DataSet ds, Envelope bounds, long count) {
-		Plan plan = Plan.builder()
-						.query(ds.getId(), bounds)
-						.build();
-		MarmotRuntime marmot = ds.getMarmotRuntime();
-		List<Record> selected = marmot.executeToRecordSet(plan).toList();
-		double ratio = (double)count / selected.size();
-		System.out.printf("%d / %d -> %.2f%n", count, selected.size(), ratio);
-		
-		return FStream.from(selected).sample(ratio).toList();
 	}
 }
