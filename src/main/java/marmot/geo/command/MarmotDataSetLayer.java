@@ -87,7 +87,7 @@ public class MarmotDataSetLayer extends StyleLayer {
 	
 	private SimpleFeatureSource query(Envelope bounds) throws Exception {
 		RecordSet rset = m_store.createRangeQuery(m_ds.getId(), bounds).run();
-		 return DataUtilities.source(SimpleFeatures.toFeatureCollection(m_sfType, rset.toList()));
+		return DataUtilities.source(SimpleFeatures.toFeatureCollection(m_sfType, rset.toList()));
 	}
 	
 	private SimpleFeatureCollection read(DataSet ds) {
