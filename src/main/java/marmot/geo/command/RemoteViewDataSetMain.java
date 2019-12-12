@@ -11,10 +11,10 @@ import org.geotools.swt.SwtMapFrame;
 
 import com.google.common.io.Files;
 
-import marmot.DataSet;
 import marmot.MarmotRuntime;
 import marmot.command.MarmotClientCommand;
 import marmot.command.MarmotClientCommands;
+import marmot.dataset.DataSet;
 import marmot.geo.geotools.SimpleFeatures;
 import marmot.geo.query.GeoDataStore;
 import picocli.CommandLine;

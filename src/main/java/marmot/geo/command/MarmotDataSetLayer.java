@@ -14,10 +14,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-import marmot.DataSet;
 import marmot.RecordSet;
+import marmot.dataset.DataSet;
 import marmot.geo.geotools.SimpleFeatures;
 import marmot.geo.query.GeoDataStore;
+import utils.Throwables;
 
 /**
  * 
@@ -54,7 +55,13 @@ public class MarmotDataSetLayer extends StyleLayer {
 		m_datasetBounds = new ReferencedEnvelope(ds.getBounds(), m_crs);
 		
 		m_range = m_datasetBounds;
-		m_source = query(m_range);
+		try {
+			m_source = query(m_range);
+		}
+		catch ( Exception e ) {
+			Throwables.throwIfInstanceOf(e, RuntimeException.class);
+			throw Throwables.toRuntimeException(e);
+		}
 	}
 
 	@Override
@@ -66,13 +73,19 @@ public class MarmotDataSetLayer extends StyleLayer {
     public synchronized FeatureSource<?, ?> getFeatureSource() {
 		ReferencedEnvelope range = m_context.getViewport().getBounds();
 		if ( !range.equals(m_range) ) {
-			m_source = query(m_range = range);
+			try {
+				m_source = query(m_range = range);
+			}
+			catch ( Exception e ) {
+				Throwables.throwIfInstanceOf(e, RuntimeException.class);
+				throw Throwables.toRuntimeException(e);
+			}
 		}
 		
 		return m_source;
     }
 	
-	private SimpleFeatureSource query(Envelope bounds) {
+	private SimpleFeatureSource query(Envelope bounds) throws Exception {
 		RecordSet rset = m_store.createRangeQuery(m_ds.getId(), bounds).run();
 		 return DataUtilities.source(SimpleFeatures.toFeatureCollection(m_sfType, rset.toList()));
 	}
