@@ -67,9 +67,12 @@ public class RemoteViewDataSetMain extends MarmotClientCommand {
 
 		File parentDir = Files.createTempDir().getParentFile();
 		File cacheDir =  new File(parentDir, "marmot_geoserver_cache");
-		GeoDataStore store = GeoDataStore.from(marmot, cacheDir)
+		GeoDataStore store = GeoDataStore.builder()
+											.setMarmotRuntime(marmot)
+											.setCacheDir(cacheDir)
 											.setSampleCount(m_sampleCount)
-											.setUsePrefetch(m_prefetch);
+											.setUsePrefetch(m_prefetch)
+											.build();
 		
 	    String srid = null;
 	    SimpleFeatureCollection sfColl;
