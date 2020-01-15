@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'com.github.johnrengelman.shadow'
  
 group = 'etri'
@@ -40,7 +40,7 @@ dependencies {
 	compileOnly project(':marmot.common')
 	compileOnly project(':marmot.client')
 
-	implementation "org.geotools:gt-swt:${geotools_version}"
+	api "org.geotools:gt-swt:${geotools_version}"
 	
 	testImplementation "junit:junit:4.12"
 }
