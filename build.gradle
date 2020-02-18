@@ -85,7 +85,7 @@ artifacts {
 apply plugin: 'maven-publish'
 publishing {
 	publications {
-		main(MavenPublication) {
+		marmotTools(MavenPublication) {
 			artifact jar
 			artifact sourceJar
 			artifact javadocJar
