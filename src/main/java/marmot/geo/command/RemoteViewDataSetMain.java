@@ -54,7 +54,7 @@ public class RemoteViewDataSetMain extends MarmotClientCommand {
 	@Override
 	public void run() {
 		try {
-			run(getMarmotRuntime());
+			run(getInitialContext());
 		}
 		catch ( Exception e ) {
 			System.err.printf("failed: %s%n%n", e);
